@@ -1,0 +1,429 @@
+---
+title: "Anaylysis Process for MSc Dissertation"
+author: "Weixin Zhao"
+date: "August 2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+<br>
+
+<br>
+
+# **1 Introduction**
+- - - 
+
+## 1.1 Background
+
+*MSc Dissertation*
+
+It is the analysis part for my MSc dissertation *The Nocebo effect in the COVID-19 Pandemic: the role of information spreading*.   
+
+The aims of this research are 
+
+(1) to examinate the effects of different sources of information in nocebo effect during the COVID-19 pandemic; 
+
+(2) to conduct a quantitative study to provide empirical evidence supporting the theoretical framework from Amanzio et al. (2020).
+
+<br>
+
+*Programming environment*
+
+ +  Software environment: [R](https://www.r-project.org/) version 4.1.0
+ +  Integrated development environment: [RStudio](https://www.rstudio.com/) version 1.4.1103
+
+```{r}
+# check the information for programming
+sessionInfo()
+```
+
+
+<br>
+
+## 1.2 Data Origin
+
+The data used in this study was from the longitudinal survey via Internet across 4 waves of the COVID-19 psychological research consortium (C19PRC) study.
+
+<br>
+
+## 1.3 Research Questions
+
+(1) **Were there more people who knew more non-authority information about COVID-19 thinking themselves had COVID-19 than people who knew less non-authority information about COVID-19?**
+
+<br>
+
+(2) **Were there more people who knew more authority information about COVID-19 thinking themselves had not COVID-19 than people who knew less authority information about COVID-19?**
+
+<br>
+
+(3) **Did knowing information about COVID-19 in different scources have interaction with trusting information about COVID-19 on nocebo response to COVID-19?**
+
+<br>
+
+(4) **Did anxiety to COVID-19 have indirect effect on nocebo response to COVID-19? (from knowing information about COVID-19 to anxiety to COVID-19, and from anxiety to COVID-19 to nocebo response to COVID-19)**
+
+<br>
+
+(5) **After controlling other variables, did the model still have significant effect?**
+
+<br>
+
+<br>
+
+<br> 
+
+# **2 Data Preparations**
+_ _ _
+
+## 2.1 load the data
+```{r, echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# prepare the packages with specific functions
+# find the location of the files in the project
+library(here)
+
+# help to manage the data
+library(tidyverse)
+library(knitr)
+```
+<br>
+```{r}
+# use the packages to load the original data
+# load the original data and name it as "nocebo_0"
+nocebo_0<- read.csv(here("data","COVID W1_W2_W3_W4 Cleaned 4949.csv"))
+
+# check the numbers of observations and variables
+dim(nocebo_0)
+
+# check the first 5 rows and 5 columns of the original data "nocebo_0"
+head(nocebo_0)[1:5]
+
+# there is an error in the name of the first column, rename and check it again
+colnames(nocebo_0)[1] = "New_PID"
+
+head(nocebo_0)[1:5]
+
+```
+<br>
+
+## 2.2 Select the sample and recode the variables
+
+Firstly, I select variables used in this research and the qualified participants presented in wave 1 and wave 3 recontacts.And I recode and rename the variables.
+```{r}
+# sample from wave 1 and wave 3 recontacts
+# save these data with the name of "df1"
+df1<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 3 recontacts
+    W3Re_Present,
+    
+    # Sourcing of information measured in wave 1
+    W1_INFO_1, W1_INFO_2, W1_INFO_3, W1_INFO_4,
+    W1_INFO_5, W1_INFO_6, W1_INFO_7, W1_INFO_8,W1_INFO_9,
+    
+    # Level of trust in information source measured in wave 1
+    W1_TRUST_1, W1_TRUST_2, W1_TRUST_3, W1_TRUST_4,
+    W1_TRUST_5, W1_TRUST_6, W1_TRUST_7, W1_TRUST_8, W1_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 3 
+    W3_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 3
+    W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
+    
+    # control variables
+    W3_Age_categories, W3_Gender_binary, W1_Income_2019,
+    W1_Dx_health_preC19, W3_GAD_Cat) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 1 and wave 3
+    W3Re_Present == "1" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W3_C19_Infected >= "1" & W3_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
+    sub_infected = ifelse(W3_Infected_Unsure == "1", "0", "1"),
+    
+    # "health" represent the healthy problem
+    # Due to the scale of this item measured in wave 1 is different to those measured in wave 3 and 4, recode it and keep the scale consistent.
+    # "0" = No, "1" = Yes
+    health = ifelse(W1_Dx_health_preC19 == "2", "0", "1"),
+    
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W3_Gender_binary == "1", "0", "1")) %>% 
+  
+  # rename the variables
+  rename( 
+    id = New_PID ,
+    
+    info_1 = W1_INFO_1, info_2 = W1_INFO_2, info_3 = W1_INFO_3, 
+    info_4 = W1_INFO_4, info_5 = W1_INFO_5, info_6 = W1_INFO_6, 
+    info_7 = W1_INFO_7, info_8 = W1_INFO_8, info_9 = W1_INFO_9,
+    
+    trust_1 = W1_TRUST_1, trust_2 = W1_TRUST_2, trust_3 = W1_TRUST_3, 
+    trust_4 = W1_TRUST_4, trust_5 = W1_TRUST_5, trust_6 = W1_TRUST_6,
+    trust_7 = W1_TRUST_7, trust_8 = W1_TRUST_8, trust_9 = W1_TRUST_9,
+    
+    c19_anxiety = W3_COVID19_anxiety,
+    
+    age = W3_Age_categories, income = W1_Income_2019, gad = W3_GAD_Cat)
+
+
+# check the numbers of observations and variables
+dim(df1)
+
+# randomly check the 5 rows of df1
+sample_n(df1, 5)
+```
+
+<br>
+
+Next, I repeat this process to select the qualified participants in wave 3 top-ups, wave 4 top-ups and boosters, respectively.
+
+```{r}
+# sample from wave 3 top-ups
+# save these data with the name of "df2"
+df2<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 3 top-ups
+    W3Top_Present,
+    
+    # Sourcing of information measured in wave 3
+    W3_INFO_1, W3_INFO_2, W3_INFO_3, W3_INFO_4,
+    W3_INFO_5, W3_INFO_6, W3_INFO_7, W3_INFO_8, W3_INFO_9,
+    
+    # Level of trust in information source measured in wave 3
+    W3_TRUST_1, W3_TRUST_2, W3_TRUST_3, W3_TRUST_4,
+    W3_TRUST_5, W3_TRUST_6, W3_TRUST_7, W3_TRUST_8, W3_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 3 
+    W3_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 3
+    W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
+    
+    # control variables
+    W3_Age_categories, W3_Gender_binary, IW3_ncome_2019,
+    W3_Chronic_illness_self, W3_GAD_Cat) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 3 top-ups
+    W3Top_Present == "1" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W3_C19_Infected >= "1" & W3_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
+    sub_infected = ifelse(W3_Infected_Unsure == "1", "0", "1"),
+     
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W3_Gender_binary == "1", "0", "1")) %>% 
+  
+  # rename the variables
+  rename(
+    id = New_PID ,
+    
+    info_1 = W3_INFO_1, info_2 = W3_INFO_2, info_3 = W3_INFO_3, 
+    info_4 = W3_INFO_4, info_5 = W3_INFO_5, info_6 = W3_INFO_6, 
+    info_7 = W3_INFO_7, info_8 = W3_INFO_8, info_9 = W3_INFO_9,
+    
+    trust_1 = W3_TRUST_1, trust_2 = W3_TRUST_2, trust_3 = W3_TRUST_3, 
+    trust_4 = W3_TRUST_4, trust_5 = W3_TRUST_5, trust_6 = W3_TRUST_6,
+    trust_7 = W3_TRUST_7, trust_8 = W3_TRUST_8, trust_9 = W3_TRUST_9,
+    
+    c19_anxiety = W3_COVID19_anxiety,
+    
+    age = W3_Age_categories, income = IW3_ncome_2019, 
+    gad = W3_GAD_Cat, health = W3_Chronic_illness_self)
+
+
+# check the numbers of observations and variables
+dim(df2)
+
+# randomly check the 5 rows of df2
+sample_n(df2, 5)
+
+
+```
+
+<br>
+
+```{r}
+# sample from wave 4 top-ups and boosters
+# save these data with the name of "df3"
+df3<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 4
+    W4_Type,
+    
+    # Sourcing of information measured in wave 4
+    W4_INFO_1, W4_INFO_2, W4_INFO_3, W4_INFO_4,
+    W4_INFO_5, W4_INFO_6, W4_INFO_7, W4_INFO_8, W4_INFO_9,
+    
+    # Level of trust in information source measured in wave 4
+    W4_TRUST_1, W4_TRUST_2, W4_TRUST_3, W4_TRUST_4,
+    W4_TRUST_5, W4_TRUST_6, W4_TRUST_7, W4_TRUST_8, W4_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 4 
+    W4_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 4
+    W4_C19_Infected, W4_Infected_Unsure, W4_Infected_Yes,
+    
+    # control variables
+    W4_Age_categories, W4_Gender_binary, W4_Income_2019,
+    W4_Chronic_illness_self, W4_GAD_Cat) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 4 top-ups and boosters
+    W4_Type >= "2" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W4_C19_Infected >= "1" & W4_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
+    sub_infected = ifelse(W4_Infected_Unsure == "1", "0", "1"),
+     
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W4_Gender_binary == "1", "0", "1")) %>% 
+  
+  # rename the variables
+  rename(
+    id = New_PID ,
+    
+    info_1 = W4_INFO_1, info_2 = W4_INFO_2, info_3 = W4_INFO_3, 
+    info_4 = W4_INFO_4, info_5 = W4_INFO_5, info_6 = W4_INFO_6, 
+    info_7 = W4_INFO_7, info_8 = W4_INFO_8, info_9 = W4_INFO_9,
+    
+    trust_1 = W4_TRUST_1, trust_2 = W4_TRUST_2, trust_3 = W4_TRUST_3, 
+    trust_4 = W4_TRUST_4, trust_5 = W4_TRUST_5, trust_6 = W4_TRUST_6,
+    trust_7 = W4_TRUST_7, trust_8 = W4_TRUST_8, trust_9 = W4_TRUST_9,
+    
+    c19_anxiety = W4_COVID19_anxiety,
+    
+    age = W4_Age_categories, income = W4_Income_2019, 
+    gad = W4_GAD_Cat, health = W4_Chronic_illness_self)
+
+
+# check the numbers of observations and variables
+dim(df3)
+
+# randomly check the 5 rows of df3
+sample_n(df3, 5)
+
+```
+
+<br>
+
+## 2.3 Synthese the data
+```{r}
+
+
+```
+## 2.4 Calculate the variables
+
+
+
+## 2.5 Data description
+
+explain every variables in the data after finishing the data preparations.
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **3 Preliminary Analysis: preparatory work**
+_ _ _
+
+
+## 3.1 Descriptive statistics and correlations martix for all variables
+
+sample size (mean, SD)
+
+variables (mean info trust, anxiety, nocebo,age gender,income, health, gad)
+
+
+## 3.2 Data visualizations 
+
+*<1>Univariate plots* 
+
+c19_anixety  
+
+sub_infected
+
+*<2>Bivariate plots*  
+
+authority information~ c19_anxiety
+
+non-authority information~ c19_anxiety
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **4 Main Analysis: Tests of theory**
+_ _ _
+
+## 4.1 Model 1
+
+
+
+## 4.2 Model 2 including control variables
+
+<br>
+
+<br>
+
+<br> 
+
+# **5 Subsidiary analyses**
+_ _ _
+
+
+<br>
+
+<br>
+
+<br>
+
+### *Notes*
+- - - 
+
+link to the Github.
