@@ -1,10 +1,9 @@
 ---
 title: "Anaylysis Process for MSc Dissertation"
-author: "Weixin Zhao"
+author: "PSY6009_200256720_Webster"
 date: "August 2021"
 output:
   html_document: default
-  pdf_document: default
 ---
 
 <br>
@@ -47,7 +46,7 @@ The data used in this study was from the longitudinal survey via Internet across
 
 <br>
 
-## 1.3 Research Questions
+## 1.3 Research Questions **will be revised**
 
 (1) **Were there more people who knew more non-authority information about COVID-19 thinking themselves had COVID-19 than people who knew less non-authority information about COVID-19?**
 
@@ -136,8 +135,10 @@ df1<- nocebo_0 %>%
     W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
     
     # control variables
-    W3_Age_categories, W3_Gender_binary, W1_Income_2019,
-    W1_Dx_health_preC19, W3_GAD_Cat) %>% 
+    W3_Age_year, W3_Age_categories, W3_Gender_binary, W1_Income_2019,
+    W1_Dx_health_preC19, W3_GAD_Cat,
+    W3_GAD_1, W3_GAD_2, W3_GAD_3, W3_GAD_4,
+    W3_GAD_5, W3_GAD_6, W3_GAD_7) %>% 
   
   # select the qualified participants
   filter(
@@ -149,19 +150,22 @@ df1<- nocebo_0 %>%
   
   # recode the variables
   mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W3Re_Present == "1", 1),
+    
     # "sub_infected" represent the nocebo response to COVID-19 
     # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
-    sub_infected = ifelse(W3_Infected_Unsure == "1", "0", "1"),
+    sub_infected = ifelse(W3_Infected_Unsure == "1", 0, 1),
     
     # "health" represent the healthy problem
     # Due to the scale of this item measured in wave 1 is different to those measured in wave 3 and 4, recode it and keep the scale consistent.
     # "0" = No, "1" = Yes
-    health = ifelse(W1_Dx_health_preC19 == "2", "0", "1"),
+    health = ifelse(W1_Dx_health_preC19 == "2", 0, 1),
     
     # "gender" represent the gender binary
     # recode gender into 0/1, which is convenient for the analysis.
     # "0"= male, "1" = female
-    gender = ifelse(W3_Gender_binary == "1", "0", "1")) %>% 
+    gender = ifelse(W3_Gender_binary == "1", 0, 1)) %>% 
   
   # rename the variables
   rename( 
@@ -177,7 +181,10 @@ df1<- nocebo_0 %>%
     
     c19_anxiety = W3_COVID19_anxiety,
     
-    age = W3_Age_categories, income = W1_Income_2019, gad = W3_GAD_Cat)
+    age_year = W3_Age_year, age_cate = W3_Age_categories, 
+    income = W1_Income_2019, gad = W3_GAD_Cat,
+    gad_1 = W3_GAD_1, gad_2 = W3_GAD_2, gad_3 = W3_GAD_3, 
+    gad_4 = W3_GAD_4, gad_5 = W3_GAD_5, gad_6 = W3_GAD_6, gad_7 = W3_GAD_7)
 
 
 # check the numbers of observations and variables
@@ -218,8 +225,10 @@ df2<- nocebo_0 %>%
     W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
     
     # control variables
-    W3_Age_categories, W3_Gender_binary, IW3_ncome_2019,
-    W3_Chronic_illness_self, W3_GAD_Cat) %>% 
+    W3_Age_year, W3_Age_categories, W3_Gender_binary, IW3_ncome_2019,
+    W3_Chronic_illness_self, W3_GAD_Cat,
+    W3_GAD_1, W3_GAD_2, W3_GAD_3, W3_GAD_4,
+    W3_GAD_5, W3_GAD_6, W3_GAD_7) %>% 
   
   # select the qualified participants
   filter(
@@ -231,14 +240,17 @@ df2<- nocebo_0 %>%
   
   # recode the variables
   mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W3Top_Present == "1", 2),
+    
     # "sub_infected" represent the nocebo response to COVID-19 
     # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
-    sub_infected = ifelse(W3_Infected_Unsure == "1", "0", "1"),
+    sub_infected = ifelse(W3_Infected_Unsure == "1", 0, 1),
      
     # "gender" represent the gender binary
     # recode gender into 0/1, which is convenient for the analysis.
     # "0"= male, "1" = female
-    gender = ifelse(W3_Gender_binary == "1", "0", "1")) %>% 
+    gender = ifelse(W3_Gender_binary == "1", 0, 1)) %>% 
   
   # rename the variables
   rename(
@@ -254,8 +266,10 @@ df2<- nocebo_0 %>%
     
     c19_anxiety = W3_COVID19_anxiety,
     
-    age = W3_Age_categories, income = IW3_ncome_2019, 
-    gad = W3_GAD_Cat, health = W3_Chronic_illness_self)
+    age_year = W3_Age_year, age_cate = W3_Age_categories, income = IW3_ncome_2019, 
+    gad = W3_GAD_Cat, health = W3_Chronic_illness_self,
+    gad_1 = W3_GAD_1, gad_2 = W3_GAD_2, gad_3 = W3_GAD_3, 
+    gad_4 = W3_GAD_4, gad_5 = W3_GAD_5, gad_6 = W3_GAD_6, gad_7 = W3_GAD_7)
 
 
 # check the numbers of observations and variables
@@ -296,8 +310,10 @@ df3<- nocebo_0 %>%
     W4_C19_Infected, W4_Infected_Unsure, W4_Infected_Yes,
     
     # control variables
-    W4_Age_categories, W4_Gender_binary, W4_Income_2019,
-    W4_Chronic_illness_self, W4_GAD_Cat) %>% 
+    W4_Age_year, W4_Age_categories, W4_Gender_binary, W4_Income_2019,
+    W4_Chronic_illness_self, W4_GAD_Cat,
+    W4_GAD1, W4_GAD2, W4_GAD3, W4_GAD4,
+    W4_GAD5, W4_GAD6, W4_GAD7) %>% 
   
   # select the qualified participants
   filter(
@@ -309,14 +325,17 @@ df3<- nocebo_0 %>%
   
   # recode the variables
   mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W4_Type == "2", 3,4),
+    
     # "sub_infected" represent the nocebo response to COVID-19 
     # "0" = Thought they have not had COVID-19, "1" = Thought they have had COVID-19
-    sub_infected = ifelse(W4_Infected_Unsure == "1", "0", "1"),
+    sub_infected = ifelse(W4_Infected_Unsure == "1", 0, 1),
      
     # "gender" represent the gender binary
     # recode gender into 0/1, which is convenient for the analysis.
     # "0"= male, "1" = female
-    gender = ifelse(W4_Gender_binary == "1", "0", "1")) %>% 
+    gender = ifelse(W4_Gender_binary == "1", 0, 1)) %>% 
   
   # rename the variables
   rename(
@@ -332,8 +351,10 @@ df3<- nocebo_0 %>%
     
     c19_anxiety = W4_COVID19_anxiety,
     
-    age = W4_Age_categories, income = W4_Income_2019, 
-    gad = W4_GAD_Cat, health = W4_Chronic_illness_self)
+    age_year = W4_Age_year, age_cate = W4_Age_categories, income = W4_Income_2019, 
+    gad = W4_GAD_Cat, health = W4_Chronic_illness_self,
+    gad_1 = W4_GAD1, gad_2 = W4_GAD2, gad_3 = W4_GAD3, 
+    gad_4 = W4_GAD4, gad_5 = W4_GAD5, gad_6 = W4_GAD6, gad_7 = W4_GAD7)
 
 
 # check the numbers of observations and variables
@@ -348,48 +369,173 @@ sample_n(df3, 5)
 
 ## 2.3 Synthese the data
 ```{r}
+# first remove the redundant variables and keep the same numbers and names of variables of every dataset
+df1 <- df1 %>% 
+  select(-W3Re_Present, -W3_C19_Infected, -W3_Infected_Unsure, 
+         -W3_Infected_Yes, -W3_Gender_binary, -W1_Dx_health_preC19)
+
+df2 <- df2 %>% 
+  select(-W3Top_Present, -W3_C19_Infected, -W3_Infected_Unsure, 
+         -W3_Infected_Yes, -W3_Gender_binary)
+
+df3 <- df3 %>% 
+  select(-W4_Type, -W4_C19_Infected, -W4_Infected_Unsure, 
+         -W4_Infected_Yes, -W4_Gender_binary)
+
+# synthesize 3 datasets into one and name it as "nocebo_1"
+nocebo_1 <- rbind(df1,df2,df3)
+
+# check the numbers of observations and variables
+dim(nocebo_1)
+
+# check the participants
+nocebo_1 %>% 
+  group_by(source) %>% 
+  summarise(n = list(source),mean_age = mean(age_year), sd_age = sd(age_year), mean_gender = mean(gender))
+
+# randomly check the 5 rows of nocebo_1
+sample_n(nocebo_1,5)
+```
+
+<br>
+
+## 2.4 Reliability analysis   
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# load the packages
+library(psych)
+```
+
+
+```{r}
+# select the items measured "Sourcing of information"
+df4 <- nocebo_1 %>% 
+  select(info_1, info_2, info_3, info_4, info_5, info_6, info_7, info_8, info_9)
+
+# calculate the Cronbach's alpha of "Sourcing of information"
+alpha(df4, check.keys=TRUE)
+
+# select the items measured "Level of trust in information source"
+df5 <- nocebo_1 %>% 
+  select(trust_1, trust_2, trust_3, trust_4, trust_5, trust_6, trust_7, trust_8, trust_9)
+
+# calculate the Cronbach's alpha of "Level of trust in information source"
+alpha(df5, check.keys=TRUE)
+
+
+# select the items measured "Generalized Anxiety Disorder"
+df6 <- nocebo_1 %>% 
+  select(gad_1, gad_2, gad_3, gad_4, gad_5, gad_6, gad_7)
+
+# calculate the Cronbach's alpha of "Generalized Anxiety Disorder"
+alpha(df6, check.keys=TRUE)    
+
+```
+
+## 2.5 Calculate the variables
+
+```{r}
+# rescale the item of "anxiety to COVID-19" to range from 0 to 1 
+nocebo_1$c19_anxiety = nocebo_1$c19_anxiety*0.01
+
+# calculate the sum of knowing information about COVID-19 and trust in information from authority sources
+nocebo_1$total_info = apply(nocebo_1[,2:10],1,sum)
+
+nocebo_1$total_trust = apply(nocebo_1[,11:19],1,sum)
+
+# calculate the sum of knowing information about COVID-19 and trust in information from authority sources
+nocebo_1$a_info = apply(nocebo_1[,7:9],1,sum)
+
+nocebo_1$a_trust = apply(nocebo_1[,16:18],1,sum)
+
+# calculate the sum of knowing information about COVID-19 and trust in information from non-authority sources
+nocebo_1$na_info = apply(nocebo_1[,c(2:6,10)],1,sum)
+
+nocebo_1$na_trust = apply(nocebo_1[,c(11:15,19)],1,sum)
+
+```
+
+## 2.6 Data description
+
+```{r}
+# reorder the columns
+nocebo_2 <- nocebo_1 %>% 
+  select(id,
+         info_1, info_2, info_3, info_4, info_5, info_9, info_6, info_7, info_8,
+         trust_1, trust_2, trust_3, trust_4, trust_5, trust_9, trust_6, trust_7, trust_8,
+         total_info,total_trust, a_info, a_trust, na_info, na_trust,
+         c19_anxiety, sub_infected, source,
+         age_year, age_cate, gender, income, health, gad)
+
+# randomly check the 5 rows of nocebo_2
+sample_n(nocebo_2,5)
+```
+
+| Variable | Description | 
+|----:|:-----------|
+|id|Unique number of every participant.|
+|info_1|(*Non-authority*)The amount of information about COVID-19 that the participants obtained from *newspaper*.|
+|info_2|(*Non-authority*)The amount of information that the participants obtained from *television*.|
+
+**not completed yet**
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **3 Preliminary Analysis**
+_ _ _
+
+
+## 3.1 Descriptive statistics
+```{r}
+#sample size (mean, SD)
+describe(nocebo_2)
+
+```
+
+## 3.2 Correlations martix
+```{r}
+#variables 
+corr.test(nocebo_2[,c(20,21,26,27)])
+
+corr.test(nocebo_2[,22:27])
+```
+
+## 3.3 Data visualizations 
+
+*<1>Univariate plots* 
+```{r}
+# anxiety
+plot(density(nocebo_2$c19_anxiety), main="anxiety to COVID-19")
+
+
+#sub_infected
+
+table(nocebo_2$sub_infected)
+
+# probably can remove this graph
+plot(1:474,dbinom(1:474,0.84, size=474), 
+     xlab='N of participants thought having COVID-19', ylab='Probability', type='l')
+
 
 
 ```
-## 2.4 Calculate the variables
-
-
-
-## 2.5 Data description
-
-explain every variables in the data after finishing the data preparations.
-
-
-<br>
-
-<br>
-
-<br> 
-
-# **3 Preliminary Analysis: preparatory work**
-_ _ _
-
-
-## 3.1 Descriptive statistics and correlations martix for all variables
-
-sample size (mean, SD)
-
-variables (mean info trust, anxiety, nocebo,age gender,income, health, gad)
-
-
-## 3.2 Data visualizations 
-
-*<1>Univariate plots* 
-
-c19_anixety  
-
-sub_infected
 
 *<2>Bivariate plots*  
 
-authority information~ c19_anxiety
+```{r}
+# change the codes with ggplot2 [need improvement]
+plot(nocebo_2$total_info,jitter(nocebo_2$c19_anxiety, 0))
 
-non-authority information~ c19_anxiety
+plot(nocebo_2$total_trust,jitter(nocebo_2$c19_anxiety, 0))
+
+plot(nocebo_2$total_info,jitter(nocebo_2$sub_infected, 0.5))
+
+
+```
 
 
 <br>
@@ -398,14 +544,100 @@ non-authority information~ c19_anxiety
 
 <br> 
 
-# **4 Main Analysis: Tests of theory**
+# **4 Main Analysis**
 _ _ _
 
-## 4.1 Model 1
+## 4.0 Preparation for the interaction
+```{r}
+
+# calculate the interaction of information and trust with centering 
+nocebo_2 <- nocebo_2 %>% 
+  mutate(info_trust = 
+           ((info_1-mean(info_1))*(trust_1-mean(trust_1)) + (info_2-mean(info_2))*(trust_2-mean(trust_2))
+            +(info_3-mean(info_3))*(trust_3-mean(trust_3))+ (info_4-mean(info_4))*(trust_4-mean(trust_4))
+            +(info_5-mean(info_5))*(trust_5-mean(trust_5))+ (info_6-mean(info_6))*(trust_6-mean(trust_6))
+            +(info_7-mean(info_7))*(trust_7-mean(trust_7))+ (info_8-mean(info_8))*(trust_8-mean(trust_8))
+            +(info_9-mean(info_9))*(trust_9-mean(trust_9))))
+
+# centering the variables
+#nocebo_2$total_info_c <- scale(nocebo_2$total_info, center = TRUE, scale = FALSE)
+#nocebo_2$total_trust_c <- scale(nocebo_2$total_trust, center = TRUE, scale = FALSE)
+
+```
 
 
+## 4.1 Part A: Total information
 
-## 4.2 Model 2 including control variables
+### 4.1.1 linear regression to COVID-19 anxiety
+```{r}
+lm1 <- lm(c19_anxiety~total_info + total_trust + info_trust, data = nocebo_2)
+summary(lm1)
+
+```
+
+
+### 4.1.2 logistic regression to subjected infection with COVID-19
+
+```{r}
+glm1<-glm(sub_infected~total_info + total_trust + info_trust + c19_anxiety, data=nocebo_2, family=binomial(link='logit')) 
+summary(glm1)
+```
+
+
+### 4.1.3 SEM model
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# load the package to analyze the path model
+library(lavaan)
+```
+
+```{r}
+# some problems with the centered variables "info_trust"
+model1 <-'
+c19_anxiety ~ total_info  + total_trust + info_trust
+sub_infected~total_info  + total_trust + info_trust + c19_anxiety
+'
+fit1 <- sem(model1, ordered = c("sub_infected"), data = nocebo_2)
+summary(fit1, fit.measures = TRUE)
+```
+
+the p values in "lm" and "glm" regression are similar with those in path models.
+
+So remove the regression analysis. No need to do regression separately. 
+
+
+```{r}
+# follow the tutorial to do this but I am not sure whether it is necessary 
+# how to interpret with the centered "info_trust" ? it is so weird
+# probably remove this
+standardizedSolution(fit1)  
+```
+
+
+### 4.1.4 check the mediation
+```{r}
+# bootstrap
+parameterestimates(fit1, boot.ci.type ='bca.simple', standardized = TRUE)
+```
+
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# using RMediation to check out
+library(RMediation)
+```
+
+
+```{r}
+medci (mu.x = 0.009, mu.y = 0.009, se.x = 0.003, se.y = 0.232, rho = 0, alpha = 0.1, type = "prodclin")    
+```
+
+## 4.2 Part B: information from different sources
+
+categorize the "na_info" and "a_info" into "high" "low" or "0" "1" 
+
+not sure to use words or dummy coding
+
+interaction: 4 conditions. Should i make 3 variables of the dummy coding?
 
 <br>
 
@@ -416,6 +648,16 @@ _ _ _
 # **5 Subsidiary analyses**
 _ _ _
 
+**adding the controls variables**
+
+For the total information:
+  
+model2 <-'
+c19_anxiety ~ total_info  + total_trust + info_trust + age_cate +gad + health + gender + income
+sub_infected~total_info  + total_trust + info_trust + c19_anxiety + age_cate +gad + health + gender +income
+'
+fit2 <- sem(model2, ordered = c("sub_infected"), data = nocebo_2)
+summary(fit2)
 
 <br>
 
