@@ -1,0 +1,127 @@
+COVID W1_W2_W3_W4 Cleaned 4949.sav
+
+- contains C19PRC-UK data from wave 1 to wave 4, file type as sav.
+
+
+COVID W1_W2_W3_W4 Cleaned 4949.csv
+
+- contains C19PRC-UK data from wave 1 to wave 4,, file type as csv used to load into the R, including 4949 observations and 1960 variables.
+
+The columns used in this analysis are:
+
+New_PID: pid
+
+W3Re_Present: Present at W3 recontacts
+W3Top_Present: Present at W3 top-ups
+W4_Type: Wave 4 participant type 
+
+W1_INFO_1: How much information about COVID-19 have you obtained from each of these sources? - Newspapers
+W1_INFO_2: How much information about COVID-19 have you obtained from each of these sources? - Television
+W1_INFO_3: How much information about COVID-19 have you obtained from each of these sources? - Radio
+W1_INFO_4: How much information about COVID-19 have you obtained from each of these sources? - Internet websites
+W1_INFO_5: How much information about COVID-19 have you obtained from each of these sources? - Social media
+W1_INFO_6: How much information about COVID-19 have you obtained from each of these sources? - Your doctor
+W1_INFO_7: How much information about COVID-19 have you obtained from each of these sources? - Other health professionals
+W1_INFO_8: How much information about COVID-19 have you obtained from each of these sources? - Government agencies
+W1_INFO_9: How much information about COVID-19 have you obtained from each of these sources? - Family or friends
+
+W1_TRUST_1:How much do you trust the information from each of these sources? - Newspapers
+W1_TRUST_2:How much do you trust the information from each of these sources?- Television
+W1_TRUST_3:How much do you trust the information from each of these sources?- Radio
+W1_TRUST_4:How much do you trust the information from each of these sources?- Internet websites
+W1_TRUST_5:How much do you trust the information from each of these sources?- Social media
+W1_TRUST_6:How much do you trust the information from each of these sources? - Your doctor
+W1_TRUST_7:How much do you trust the information from each of these sources?- Other health professionals
+W1_TRUST_8:How much do you trust the information from each of these sources?- Government agencies
+W1_TRUST_9:How much do you trust the information from each of these sources?- Family or friends
+
+W1_COVID19_anxiety:How anxious are you about the coronavirus COVID-19 pandemic? Move the slider below to indicate how anxious you feel where 0 = not at all anxious and 100 = extremely anxious - Degree of anxiety
+
+W1_Income_2019: Please choose from the following options to indicate your approximate gross (before tax is taken away) household income in 2019 (last year). Include income from partners and other family members living with you and all kinds of earnings including salaries and benefits.
+W1_Dx_health_preC19:Were you diagnosed with a health condition (e.g. heart or lung disease; diabetes; cancer) before December 31st 2019 (i.e. before the start of the coronavirus COVID-19 outbreak)?
+
+W3_INFO_1: How much information about COVID-19 have you obtained from each of these sources? - Newspapers
+W3_INFO_2: How much information about COVID-19 have you obtained from each of these sources? - Television
+W3_INFO_3: How much information about COVID-19 have you obtained from each of these sources? - Radio
+W3_INFO_4: How much information about COVID-19 have you obtained from each of these sources? - Internet websites
+W3_INFO_5: How much information about COVID-19 have you obtained from each of these sources? - Social media
+W3_INFO_6: How much information about COVID-19 have you obtained from each of these sources? - Your doctor
+W3_INFO_7: How much information about COVID-19 have you obtained from each of these sources? - Other health professionals
+W3_INFO_8: How much information about COVID-19 have you obtained from each of these sources? - Government agencies
+W3_INFO_9: How much information about COVID-19 have you obtained from each of these sources? - Family or friends
+
+W3_TRUST_1:How much do you trust the information from each of these sources? - Newspapers
+W3_TRUST_2:How much do you trust the information from each of these sources?- Television
+W3_TRUST_3:How much do you trust the information from each of these sources?- Radio
+W3_TRUST_4:How much do you trust the information from each of these sources?- Internet websites
+W3_TRUST_5:How much do you trust the information from each of these sources?- Social media
+W3_TRUST_6:How much do you trust the information from each of these sources? - Your doctor
+W3_TRUST_7:How much do you trust the information from each of these sources?- Other health professionals
+W3_TRUST_8:How much do you trust the information from each of these sources?- Government agencies
+W3_TRUST_9:How much do you trust the information from each of these sources?- Family or friends
+
+W3_COVID19_anxiety: How anxious are you about the COVID-19 pandemic? Move the slider to register your response - Degree of anxiety
+
+W3_C19_Infected:To the best of your knowledge, to date, have you been infected by COVID-19?
+W3_Infected_Unsure:Please clarify your 'I'm not sure' response
+W3_Infected_Yes:Please clarify your 'yes' response
+
+W3_Age_year:What is your age?
+W3_Age_categories:W3_Age_year in 6 categories
+W3_Gender:What is your Gender?
+IW3_ncome_2019:Please choose from the following options to indicate your approximate gross (before tax is taken away) household income in 2019 (last year). Include income from partners and other family members living with you and all kinds of earnings including salaries and benefits.
+W3_Chronic_illness_self: Do you have any major underlying health conditions (e.g. lung conditions, heart disease, kidney disease, liver disease, conditions affecting the brain and nerves, diabetes, problems with your spleen, a weakened immune system)?
+W3_GAD_Cat: Anxiety caseness
+
+W3_GAD_1 Feeling nervous, anxious or on edge
+W3_GAD_2 Not being able to stop or control worrying
+W3_GAD_3 Worrying too much about different things
+W3_GAD_4 Trouble relaxing
+W3_GAD_5 Being so restless that it is hard to sit still
+W3_GAD_6 Becoming easily annoyed or irritable
+W3_GAD_7Feeling afraid as if something awful might happen
+
+
+W4_INFO_1: How much information about COVID-19 have you obtained from each of these sources? - Newspapers
+W4_INFO_2: How much information about COVID-19 have you obtained from each of these sources? - Television
+W4_INFO_3: How much information about COVID-19 have you obtained from each of these sources? - Radio
+W4_INFO_4: How much information about COVID-19 have you obtained from each of these sources? - Internet websites
+W4_INFO_5: How much information about COVID-19 have you obtained from each of these sources? - Social media
+W4_INFO_6: How much information about COVID-19 have you obtained from each of these sources? - Your doctor
+W4_INFO_7: How much information about COVID-19 have you obtained from each of these sources? - Other health professionals
+W4_INFO_8: How much information about COVID-19 have you obtained from each of these sources? - Government agencies
+W4_INFO_9: How much information about COVID-19 have you obtained from each of these sources? - Family or friends
+
+W4_TRUST_1:How much do you trust the information from each of these sources? - Newspapers
+W4_TRUST_2:How much do you trust the information from each of these sources?- Television
+W4_TRUST_3:How much do you trust the information from each of these sources?- Radio
+W4_TRUST_4:How much do you trust the information from each of these sources?- Internet websites
+W4_TRUST_5:How much do you trust the information from each of these sources?- Social media
+W4_TRUST_6:How much do you trust the information from each of these sources? - Your doctor
+W4_TRUST_7:How much do you trust the information from each of these sources?- Other health professionals
+W4_TRUST_8:How much do you trust the information from each of these sources?- Government agencies
+W4_TRUST_9:How much do you trust the information from each of these sources?- Family or friends
+
+W3_COVID19_anxiety: How anxious are you about the COVID-19 pandemic? Move the slider to register your response - Degree of anxiety
+
+W4_C19_Infected:To the best of your knowledge, to date, have you been infected by COVID-19?
+W4_Infected_Unsure:Please clarify your 'I'm not sure' response
+W4_Infected_Yes:Please clarify your 'yes' response
+
+W4_Age_year:What is your age?
+W4_Age_categories:W3_Age_year in 6 categories
+W4_Gender:What is your Gender?
+W4_Income_2019:Please choose from the following options to indicate your approximate gross (before tax is taken away) household income in 2019 (last year). Include income from partners and other family members living with you and all kinds of earnings including salaries and benefits.
+W4_Chronic_illness_self: Do you have any major underlying health conditions (e.g. lung conditions, heart disease, kidney disease, liver disease, conditions affecting the brain and nerves, diabetes, problems with your spleen, a weakened immune system)?
+W4_GAD_Cat: Anxiety caseness
+
+W4_GAD_1 Feeling nervous, anxious or on edge
+W4_GAD_2 Not being able to stop or control worrying
+W4_GAD_3 Worrying too much about different things
+W4_GAD_4 Trouble relaxing
+W4_GAD_5 Being so restless that it is hard to sit still
+W4_GAD_6 Becoming easily annoyed or irritable
+W4_GAD_7Feeling afraid as if something awful might happen
+
+
+
