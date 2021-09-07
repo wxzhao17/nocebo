@@ -1,0 +1,847 @@
+---
+title: "Anaylysis Process for MSc Dissertation"
+author: "PSY6009_200256720_Webster"
+date: "September 2021"
+output:
+  html_document: default
+---
+
+<br>
+
+The repo for this analysis process are available online via Github, please click [here](https://github.com/wxzhao17/nocebo).
+
+<br>
+
+# **1 Introduction**
+- - - 
+
+## 1.1 Background
+
+*MSc Dissertation*
+
+It is the analysis part for the MSc dissertation *The Nocebo effect in the COVID-19 Pandemic: the role of information spreading*.   
+
+The aims of this research are 
+
+(1) identify the nocebo effect in the COVID-19 pandemic and examine the effect of information spreading on nocebo response to COVID-19;
+
+<br>
+
+
+(2) conduct a quantitative study to give empirical evidence supporting the theoretical framework from Amanzio et al. (2020); 
+
+<br>
+
+
+(3) provide some applicable suggestions and measures to minimise the nocebo effect in the pandemic.
+
+<br>
+
+<br>
+
+*Programming environment*
+
+ +  Software environment: [R](https://www.r-project.org/) version 4.1.0
+ +  Integrated development environment: [RStudio](https://www.rstudio.com/) version 1.4.1103
+
+```{r}
+# check the information for programming
+sessionInfo()
+```
+
+
+<br>
+
+## 1.2 Data Origin
+
+The data used in this study was from the longitudinal survey via Internet across 4 waves of the COVID-19 psychological research consortium (C19PRC) study. Details see Figure below.
+
+```{r ,echo=FALSE, out.width="100%",fig.align="center",message=FALSE}
+# prepare the packages with specific functions
+# find the location of the files in the project
+library(here)
+library(knitr)
+
+# present the flowchart of participation in the C19PRC Study from waves 1 to 4
+figure<-here("figures","data origin.png")
+knitr::include_graphics(figure)
+
+```
+
+<br>
+
+## 1.3 Hypothses
+
+- H1: People who know more information about COVID-19 will have higher COVID-19 anxiety and be more likely to have a nocebo response to COVID-19.
+
+<br>
+
+- H2: People who have higher anxiety to COVID will be more likely to have a nocebo response to COVID-19.
+
+<br>
+
+- H3: When both know the same amount of information about COVID-19, compared to people who trust little in information sources, people who trust much in information sources will have higher COVID-19 anxiety and be more likely to have a nocebo response to COVID-19.
+
+<br>
+
+- H4: People who know more information about COVID-19 from non-authority sources than authority sources will have higher COVID-19 anxiety and be more likely to have a nocebo response to COVID-19.
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **2 Data Preparations**
+_ _ _
+
+## 2.1 load the data
+```{r, echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# help to manage the data
+library(tidyverse)
+```
+<br>
+```{r}
+# use the packages to load the original data
+# load the original data and name it as "nocebo_0"
+nocebo_0<- read.csv(here("data","COVID W1_W2_W3_W4 Cleaned 4949.csv"))
+
+# check the numbers of observations and variables
+dim(nocebo_0)
+
+# check the first 5 rows and 5 columns of the original data "nocebo_0"
+head(nocebo_0)[1:5]
+
+# there is an error in the name of the first column, rename and check it again
+colnames(nocebo_0)[1] = "New_PID"
+
+# check the first 5 rows and 5 columns of the data
+head(nocebo_0)[1:5]
+
+```
+<br>
+
+## 2.2 Select the sample and recode the variables
+
+Firstly, I select variables used in this research and the qualified participants presented in wave 1 and wave 3 recontacts.And I recode and rename the variables.
+```{r}
+# sample from wave 1 and wave 3 recontacts
+# save these data with the name of "df1"
+df1<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 3 recontacts
+    W3Re_Present,
+    
+    # Sourcing of information measured in wave 1
+    W1_INFO_1, W1_INFO_2, W1_INFO_3, W1_INFO_4,
+    W1_INFO_5, W1_INFO_6, W1_INFO_7, W1_INFO_8,W1_INFO_9,
+    
+    # Level of trust in information source measured in wave 1
+    W1_TRUST_1, W1_TRUST_2, W1_TRUST_3, W1_TRUST_4,
+    W1_TRUST_5, W1_TRUST_6, W1_TRUST_7, W1_TRUST_8, W1_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 1 
+    W1_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 3
+    W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
+    
+    # control variables
+    W3_Age_year, W3_Age_categories, W3_Gender_binary, W1_Income_2019,
+    W1_Dx_health_preC19, W3_GAD_Cat,
+    W3_GAD_1, W3_GAD_2, W3_GAD_3, W3_GAD_4,
+    W3_GAD_5, W3_GAD_6, W3_GAD_7) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 1 and wave 3
+    W3Re_Present == "1" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W3_C19_Infected >= "1" & W3_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W3Re_Present == "1", 1),
+    
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Subjectively thought they have not had COVID-19, "1" = Subjectively thought they have had COVID-19
+    sub_infected = ifelse(W3_Infected_Unsure == "1", 0, 1),
+    
+    # "health" represent the healthy problem
+    # Due to the scale of this item measured in wave 1 is different to those measured in wave 3 and 4, recode it and keep the scale consistent.
+    # "0" = No, "1" = Yes
+    health = ifelse(W1_Dx_health_preC19 == "2", 0, 1),
+    
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W3_Gender_binary == "1", 0, 1)) %>% 
+  
+  # rename the variables
+  rename( 
+    id = New_PID ,
+    
+    info_1 = W1_INFO_1, info_2 = W1_INFO_2, info_3 = W1_INFO_3, 
+    info_4 = W1_INFO_4, info_5 = W1_INFO_5, info_6 = W1_INFO_6, 
+    info_7 = W1_INFO_7, info_8 = W1_INFO_8, info_9 = W1_INFO_9,
+    
+    trust_1 = W1_TRUST_1, trust_2 = W1_TRUST_2, trust_3 = W1_TRUST_3, 
+    trust_4 = W1_TRUST_4, trust_5 = W1_TRUST_5, trust_6 = W1_TRUST_6,
+    trust_7 = W1_TRUST_7, trust_8 = W1_TRUST_8, trust_9 = W1_TRUST_9,
+    
+    c19_anxiety = W1_COVID19_anxiety,
+    
+    age_year = W3_Age_year, age_cate = W3_Age_categories, 
+    income = W1_Income_2019, gad = W3_GAD_Cat,
+    gad_1 = W3_GAD_1, gad_2 = W3_GAD_2, gad_3 = W3_GAD_3, 
+    gad_4 = W3_GAD_4, gad_5 = W3_GAD_5, gad_6 = W3_GAD_6, gad_7 = W3_GAD_7)
+
+
+# check the numbers of observations and variables
+dim(df1)
+
+# randomly check the 5 rows of df1
+sample_n(df1, 5)
+```
+
+<br>
+
+Next, I repeat this process to select the qualified participants in wave 3 top-ups, wave 4 top-ups and boosters, respectively.
+
+```{r}
+# sample from wave 3 top-ups
+# save these data with the name of "df2"
+df2<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 3 top-ups
+    W3Top_Present,
+    
+    # Sourcing of information measured in wave 3
+    W3_INFO_1, W3_INFO_2, W3_INFO_3, W3_INFO_4,
+    W3_INFO_5, W3_INFO_6, W3_INFO_7, W3_INFO_8, W3_INFO_9,
+    
+    # Level of trust in information source measured in wave 3
+    W3_TRUST_1, W3_TRUST_2, W3_TRUST_3, W3_TRUST_4,
+    W3_TRUST_5, W3_TRUST_6, W3_TRUST_7, W3_TRUST_8, W3_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 3 
+    W3_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 3
+    W3_C19_Infected, W3_Infected_Unsure, W3_Infected_Yes,
+    
+    # control variables
+    W3_Age_year, W3_Age_categories, W3_Gender_binary, IW3_ncome_2019,
+    W3_Chronic_illness_self, W3_GAD_Cat,
+    W3_GAD_1, W3_GAD_2, W3_GAD_3, W3_GAD_4,
+    W3_GAD_5, W3_GAD_6, W3_GAD_7) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 3 top-ups
+    W3Top_Present == "1" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W3_C19_Infected >= "1" & W3_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W3Top_Present == "1", 2),
+    
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Subjectively thought they have not had COVID-19, "1" = Subjectively thought they have had COVID-19
+    sub_infected = ifelse(W3_Infected_Unsure == "1", 0, 1),
+     
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W3_Gender_binary == "1", 0, 1)) %>% 
+  
+  # rename the variables
+  rename(
+    id = New_PID ,
+    
+    info_1 = W3_INFO_1, info_2 = W3_INFO_2, info_3 = W3_INFO_3, 
+    info_4 = W3_INFO_4, info_5 = W3_INFO_5, info_6 = W3_INFO_6, 
+    info_7 = W3_INFO_7, info_8 = W3_INFO_8, info_9 = W3_INFO_9,
+    
+    trust_1 = W3_TRUST_1, trust_2 = W3_TRUST_2, trust_3 = W3_TRUST_3, 
+    trust_4 = W3_TRUST_4, trust_5 = W3_TRUST_5, trust_6 = W3_TRUST_6,
+    trust_7 = W3_TRUST_7, trust_8 = W3_TRUST_8, trust_9 = W3_TRUST_9,
+    
+    c19_anxiety = W3_COVID19_anxiety,
+    
+    age_year = W3_Age_year, age_cate = W3_Age_categories, income = IW3_ncome_2019, 
+    gad = W3_GAD_Cat, health = W3_Chronic_illness_self,
+    gad_1 = W3_GAD_1, gad_2 = W3_GAD_2, gad_3 = W3_GAD_3, 
+    gad_4 = W3_GAD_4, gad_5 = W3_GAD_5, gad_6 = W3_GAD_6, gad_7 = W3_GAD_7)
+
+
+# check the numbers of observations and variables
+dim(df2)
+
+# randomly check the 5 rows of df2
+sample_n(df2, 5)
+
+
+```
+
+<br>
+
+```{r}
+# sample from wave 4 top-ups and boosters
+# save these data with the name of "df3"
+df3<- nocebo_0 %>% 
+  # select the variables
+  select(
+    # unique ID of every participant
+    New_PID, 
+    
+    # participants in wave 4
+    W4_Type,
+    
+    # Sourcing of information measured in wave 4
+    W4_INFO_1, W4_INFO_2, W4_INFO_3, W4_INFO_4,
+    W4_INFO_5, W4_INFO_6, W4_INFO_7, W4_INFO_8, W4_INFO_9,
+    
+    # Level of trust in information source measured in wave 4
+    W4_TRUST_1, W4_TRUST_2, W4_TRUST_3, W4_TRUST_4,
+    W4_TRUST_5, W4_TRUST_6, W4_TRUST_7, W4_TRUST_8, W4_TRUST_9,
+    
+    # Anxiety-level relating to COVID-19 in wave 4 
+    W4_COVID19_anxiety,
+    
+    # Experience of being infected with COVID-19 (self) in wave 4
+    W4_C19_Infected, W4_Infected_Unsure, W4_Infected_Yes,
+    
+    # control variables
+    W4_Age_year, W4_Age_categories, W4_Gender_binary, W4_Income_2019,
+    W4_Chronic_illness_self, W4_GAD_Cat,
+    W4_GAD1, W4_GAD2, W4_GAD3, W4_GAD4,
+    W4_GAD5, W4_GAD6, W4_GAD7) %>% 
+  
+  # select the qualified participants
+  filter(
+    # select the participants presented in wave 4 top-ups and boosters
+    W4_Type >= "2" &
+      
+    # select those having subjective judgment of COVID-19 infection   
+    W4_C19_Infected >= "1" & W4_Infected_Yes < "2") %>% 
+  
+  # recode the variables
+  mutate(
+    # "source" represent the source of the sample
+    source = ifelse(W4_Type == "2", 3,4),
+    
+    # "sub_infected" represent the nocebo response to COVID-19 
+    # "0" = Subjectively thought they have not had COVID-19, "1" = Subjectively thought they have had COVID-19
+    sub_infected = ifelse(W4_Infected_Unsure == "1", 0, 1),
+     
+    # "gender" represent the gender binary
+    # recode gender into 0/1, which is convenient for the analysis.
+    # "0"= male, "1" = female
+    gender = ifelse(W4_Gender_binary == "1", 0, 1)) %>% 
+  
+  # rename the variables
+  rename(
+    id = New_PID ,
+    
+    info_1 = W4_INFO_1, info_2 = W4_INFO_2, info_3 = W4_INFO_3, 
+    info_4 = W4_INFO_4, info_5 = W4_INFO_5, info_6 = W4_INFO_6, 
+    info_7 = W4_INFO_7, info_8 = W4_INFO_8, info_9 = W4_INFO_9,
+    
+    trust_1 = W4_TRUST_1, trust_2 = W4_TRUST_2, trust_3 = W4_TRUST_3, 
+    trust_4 = W4_TRUST_4, trust_5 = W4_TRUST_5, trust_6 = W4_TRUST_6,
+    trust_7 = W4_TRUST_7, trust_8 = W4_TRUST_8, trust_9 = W4_TRUST_9,
+    
+    c19_anxiety = W4_COVID19_anxiety,
+    
+    age_year = W4_Age_year, age_cate = W4_Age_categories, income = W4_Income_2019, 
+    gad = W4_GAD_Cat, health = W4_Chronic_illness_self,
+    gad_1 = W4_GAD1, gad_2 = W4_GAD2, gad_3 = W4_GAD3, 
+    gad_4 = W4_GAD4, gad_5 = W4_GAD5, gad_6 = W4_GAD6, gad_7 = W4_GAD7)
+
+
+# check the numbers of observations and variables
+dim(df3)
+
+# randomly check the 5 rows of df3
+sample_n(df3, 5)
+
+```
+
+<br>
+
+## 2.3 Synthesize the data
+```{r}
+# first remove the redundant variables and keep the same numbers and names of variables of every dataset
+df1 <- df1 %>% 
+  select(-W3Re_Present, -W3_C19_Infected, -W3_Infected_Unsure, 
+         -W3_Infected_Yes, -W3_Gender_binary, -W1_Dx_health_preC19)
+
+df2 <- df2 %>% 
+  select(-W3Top_Present, -W3_C19_Infected, -W3_Infected_Unsure, 
+         -W3_Infected_Yes, -W3_Gender_binary)
+
+df3 <- df3 %>% 
+  select(-W4_Type, -W4_C19_Infected, -W4_Infected_Unsure, 
+         -W4_Infected_Yes, -W4_Gender_binary)
+
+# synthesize 3 datasets into one and name it as "nocebo_1"
+nocebo_1 <- rbind(df1,df2,df3)
+
+# check the numbers of observations and variables
+dim(nocebo_1)
+
+# randomly check the 5 rows of nocebo_1
+sample_n(nocebo_1,5)
+
+# check the characteristics of participants from different waves
+nocebo_1 %>% 
+  group_by(source) %>% 
+  summarise(n = list(source),meanage = mean(age_year), sdage = sd(age_year), gender = mean(gender))
+
+# check the characteristics of the total sample
+table(mean(nocebo_1$age_year),sd(nocebo_1$age_year), mean(nocebo_1$gender))
+
+
+```
+
+<br>
+
+## 2.4 Reliability analysis   
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# load the packages
+library(psych)
+```
+
+
+```{r}
+# select the items measured "Sourcing of information"
+df4 <- nocebo_1 %>% 
+  select(info_1, info_2, info_3, info_4, info_5, info_6, info_7, info_8, info_9)
+
+# calculate the Cronbach's alpha of "Sourcing of information"
+alpha(df4, check.keys=TRUE)
+
+# select the items measured "Level of trust in information source"
+df5 <- nocebo_1 %>% 
+  select(trust_1, trust_2, trust_3, trust_4, trust_5, trust_6, trust_7, trust_8, trust_9)
+
+# calculate the Cronbach's alpha of "Level of trust in information source"
+alpha(df5, check.keys=TRUE)
+
+
+# select the items measured "Generalized Anxiety Disorder"
+df6 <- nocebo_1 %>% 
+  select(gad_1, gad_2, gad_3, gad_4, gad_5, gad_6, gad_7)
+
+# calculate the Cronbach's alpha of "Generalized Anxiety Disorder"
+alpha(df6, check.keys=TRUE)    
+
+```
+
+## 2.5 Calculate the variables
+
+```{r}
+# rescale the item of "anxiety to COVID-19" to range from 0 to 1 
+nocebo_1$c19_anxiety = nocebo_1$c19_anxiety*0.01
+
+# calculate the sum of knowing information about COVID-19 and trust in information sources
+nocebo_1$total_info = apply(nocebo_1[,2:10],1,sum)
+
+nocebo_1$total_trust = apply(nocebo_1[,11:19],1,sum)
+
+```
+
+## 2.6 Data description
+
+```{r}
+# reorder the columns
+nocebo_1 <- nocebo_1 %>% 
+  select(id,
+         info_1, info_2, info_3, info_4, info_5, info_6, info_7, info_8, info_9,
+         trust_1, trust_2, trust_3, trust_4, trust_5, trust_6, trust_7, trust_8, trust_9,
+         total_info,total_trust, c19_anxiety, sub_infected, source,
+         age_year, age_cate, gender, income, health, gad,
+         gad_1, gad_2, gad_3, gad_4, gad_5, gad_6, gad_7)
+
+# randomly check the 5 rows of nocebo_2
+sample_n(nocebo_1,5)
+```
+
+<br>
+
+| Variable | Description | 
+|-:|:-----------|
+|id|Unique number of every participant.|
+|info_1|(*Non-authority*)The amount of information about COVID-19 that the participants obtained from *newspaper*.|
+|info_2|(*Non-authority*)The amount of information that the participants obtained from *television*.|
+|info_3|(*Non-authority*)The amount of information that the participants obtained from *radio*.|
+|info_4|(*Non-authority*)The amount of information that the participants obtained from *internet websites*.|
+|info_5|(*Non-authority*)The amount of information that the participants obtained from *social media*.|
+|info_6|(*Authority*)The amount of information that the participants obtained from *their doctor*.|
+|info_7|(*Authority*)The amount of information that the participants obtained from *other health professionals*.|
+|info_8|(*Authority*)The amount of information that the participants obtained from *government agencies*.|
+|info_9|(*Non-authority*)The amount of information that the participants obtained from *family or friends*.|
+|trust_1|(*Non-authority*)The amount of trust the participants had in the information they got from *newspaper*.|
+|trust_2|(*Non-authority*)The amount of trust the participants had in the information they got from *television*.|
+|trust_3|(*Non-authority*)The amount of trust the participants had in the information they got from *radio*.|
+|trust_4|(*Non-authority*)The amount of trust the participants had in the information they got from *internet websites*.|
+|trust_5|(*Non-authority*)The amount of trust the participants had in the information they got from *social media*.|
+|trust_6|(*Authority*)The amount of trust the participants had in the information they got from *their doctor*.|
+|trust_7|(*Authority*)The amount of trust the participants had in the information they got from *other health professionals*.|
+|trust_8|(*Authority*)The amount of trust the participants had in the information they got from *government agencies*.|
+|trust_9|(*Non-authority*)The amount of trust the participants had in the information they got from *family or friends*.|
+|total_info|The total amount of the information about COVID-19 that the participants obtained from all sources.|
+|total_trust|The total amount of trust the participants had in the information they got from all sources.|
+|c19_anxiety|COVID-19 anxiety. The level of the participants had anxiety related to COVID-19 pandemic.|
+|sub_infected|Nocebo response to COVID-19. Categorical features.<br> 0 = subjectively thought they have not had COVID-19; 1 = subjectively thought they have had COVID-19.|
+|source|The source of the participants. Categorical features.<br> 1 = wave 1 and wave 3 recontacts; 2 = wave 3 top-ups; 3 = wave 4 top-ups; 4 = wave 4 boosters.|
+|age_year|The age of participants. Continuous features.|
+|age_cate|The age group of participants. Categorical features.<br> 1 = 18 - 24; 2 = 25 - 34; 3 = 35 - 44; 4 = 45 - 54; 5 = 55 - 64; 6 = 65 +.|
+|gender|The gender of participants. Categorical features.<br> 0 = Male; 1 = Female.|
+|income|The estimated annual gross household income in 2019. Categorical features.<br> 1 = £15,491 – 25,340; 2 =  £25,341 – 38,740; 3 = £38,741 – 57,930; 4 = £57,931 +.|
+|health|The pre-existence/existence of any major underlying health problem. Categorical features.<br> 0 = No; 1 = Yes.|
+|gad|A cut-off score of 10 in generalized anxiety disorder. Categorical features. <br> 0 = Does not meet caseness criteria; 1 = Meets caseness criteria. 
+|gad_1|Over the last two weeks, the degree of the participants have been bothered by feeling nervous, anxious or on edge.|
+|gad_2|Over the last two weeks, the degree of the participants have been bothered by not being able to stop or control worrying.|
+|gad_3|Over the last two weeks, the degree of the participants have been bothered by worrying too much about different things.|
+|gad_4|Over the last two weeks, the degree of the participants have been bothered by trouble relaxing.|
+|gad_5|Over the last two weeks, the degree of the participants have been bothered by being so restless that it was hard to sit still.|
+|gad_6|Over the last two weeks, the degree of the participants have been bothered by becoming easily annoyed or irritable.|
+|gad_7|Over the last two weeks, the degree of the participants have been bothered by feeling afraid as if something awful might happen.|
+
+<br>
+
+<br>
+
+<br> 
+
+# **3 Preliminary Analysis**
+_ _ _
+
+
+## 3.1 Descriptive statistics
+```{r}
+# check the social-demographic characteristics of sample used in this analysis
+# check the numbers of male and female
+table(nocebo_1$gender)
+# check the proportion of each gender in the sample
+prop.table(table(nocebo_1$gender))
+
+# check the numbers of each age group
+table(nocebo_1$age_cate)
+# check the proportion of each age group in the sample
+prop.table(table(nocebo_1$age_cate))
+
+# check the numbers of each income group
+table(nocebo_1$income)
+# check the proportion of each income group in the sample
+prop.table(table(nocebo_1$income))
+
+# description of the sample
+describe(nocebo_1[,c(20:23,25:30)])
+
+```
+
+## 3.2 Correlation matrix
+```{r}
+# check the correlation matrix with the p-values 
+corr.test(nocebo_1[,c(20:23,25:30)])
+```
+
+## 3.3 Data visualizations 
+
+*<1>Univariate plots* 
+```{r}
+# visualize the distribution of COVID-19 anxiety
+plot(density(nocebo_1$c19_anxiety), main="The distribution of COVID-19 anxiety")
+
+# save the plot at the folder "figures" with the name of "COVID-19 anxiety"
+png(file= here("figures","COVID-19 anxiety.png"), bg="transparent")
+plot(density(nocebo_1$c19_anxiety), main="The distribution of COVID-19 anxiety")
+dev.off()
+
+# check the numbers of participant had nocebo response to COVID-19
+table(nocebo_1$sub_infected)
+
+# visualize the distribution of nocebo response to COVID-19 and save the plot at the folder "figures" 
+plot(1:474,dbinom(1:474,0.85, size=474), 
+     xlab='N of participants subjectively thought they have had COVID-19', ylab='Probability', type='l')
+
+# save the plot at the folder "figures" with the name of "Nocebo response to COVID-19"
+png(file= here("figures","Nocebo response to COVID-19.png"), bg="transparent")
+plot(1:474,dbinom(1:474,0.85, size=474), 
+     xlab='N of participants subjectively thought they have had COVID-19', ylab='Probability', type='l')
+dev.off()
+
+```
+
+*<2>Bivariate plot*  
+
+```{r}
+# load the package used to draw a scatter plot
+library(ggplot2)
+
+# visualize the scatter plot of knowing information about COVID-19 and COVID-19 anxiety
+fig1<-ggplot(nocebo_1, aes(x=total_info,y=c19_anxiety))+
+  
+  # make the points
+  geom_point(size = 1)+
+  
+  # add the line of estimating the linear regression
+  geom_smooth(method = lm, se = TRUE) +
+  
+  # add the title
+  ggtitle("Scatter plot of knowing information about COVID-19 and COVID-19 anxiety")+
+  
+  # label the x axis and y axis
+  labs(x="Knowing information about COVID-19",y="COVID-19 anxiety")+
+  
+  # set scale of x axis
+  scale_x_continuous(limits=c(9,36),
+                     breaks=seq(9,36, by = 3))+  
+  
+  # set scale of y axis
+  scale_y_continuous(limits=c(0,1),
+                     breaks=seq(0,1, by = 0.20))+
+  
+  # set the theme 
+  theme_bw()+
+  
+  # set the elements
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        panel.grid.major = element_line(colour = "lightgrey"),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12))
+
+# save the scatter plot at the folder "figures" with the name of "scatter plot_1"
+ggsave(plot =fig1, path = here("figures"), filename = "scatter plot_1.png")
+
+# show the scatter plot
+print(fig1)
+```
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **4 Main Analysis**
+_ _ _
+
+## 4.1 Model 1: moderation of trusting in information sources and mediation of COVID-19 anxiety
+
+### 4.1.0 Preparation for the interaction
+```{r}
+# calculate the interaction of knowing information about COVID-19 and trusting in information sources with zero-centered
+nocebo_1 <- nocebo_1 %>% 
+  mutate(info_trust = 
+           ((info_1-mean(info_1))*(trust_1-mean(trust_1)) + (info_2-mean(info_2))*(trust_2-mean(trust_2))
+            +(info_3-mean(info_3))*(trust_3-mean(trust_3))+ (info_4-mean(info_4))*(trust_4-mean(trust_4))
+            +(info_5-mean(info_5))*(trust_5-mean(trust_5))+ (info_6-mean(info_6))*(trust_6-mean(trust_6))
+            +(info_7-mean(info_7))*(trust_7-mean(trust_7))+ (info_8-mean(info_8))*(trust_8-mean(trust_8))
+            +(info_9-mean(info_9))*(trust_9-mean(trust_9))))
+
+# select the variables
+nocebo_2 <- nocebo_1 %>%
+  select(id, total_info, total_trust, info_trust, c19_anxiety, sub_infected)
+
+# zero-centered the variables
+nocebo_2$total_info_c <- scale(nocebo_2$total_info, center = TRUE, scale = FALSE)
+nocebo_2$total_trust_c <- scale(nocebo_2$total_trust, center = TRUE, scale = FALSE)
+
+# categorized the nocebo response to COVID-19
+nocebo_2$sub_infected <- factor(nocebo_2$sub_infected, levels = c(0,1))
+
+# randomly check 5 rows of the data
+sample_n(nocebo_2,5)
+```
+
+### 4.1.1 SEM model
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# load the package to analyze the path model
+library(lavaan)
+```
+
+```{r}
+model1 <-'
+c19_anxiety ~ b1*total_info_c  + b2*total_trust_c + b3*info_trust
+sub_infected~a1*total_info_c  + a2*total_trust_c + a3*info_trust + c*c19_anxiety
+
+dir := a1+a2+a3
+ind := (b1+b2+b3)*c
+tot := dir + ind
+'
+fit1 <- sem(model1, ordered = c("sub_infected"), data = nocebo_2)
+summary(fit1, fit.measures = TRUE)
+
+```
+
+
+## 4.2 Model 2: moderation of knowing information from different sources and mediation of COVID-19 anxiety
+
+```{r}
+# select the variables
+nocebo_3 <- nocebo_1 %>% 
+  select(id, c19_anxiety, sub_infected)
+
+# calculate the sum of knowing information about COVID-19 from authority sources
+nocebo_3$a_info = apply(nocebo_1[,7:9],1,sum)
+
+
+# calculate the sum of knowing information about COVID-19 from non-authority sources
+nocebo_3$na_info = apply(nocebo_1[,c(2:6,10)],1,sum)
+
+
+# according to the mean, divide into two groups "0" and "1"
+nocebo_3$a_info_c = ifelse(nocebo_3$a_info >= mean(nocebo_3$a_info), 1, 0)
+
+nocebo_3$na_info_c = ifelse(nocebo_3$na_info >= mean(nocebo_3$na_info), 1, 0)
+
+
+# interaction between the amount and sources of knowing information about COVID-19
+nocebo_3$total_info_c = paste(nocebo_3$a_info_c, nocebo_3$na_info_c)
+
+nocebo_3$total_info_1 = ifelse(nocebo_3$total_info_c == "0 1", 1, 0)
+
+nocebo_3$total_info_2 = ifelse(nocebo_3$total_info_c == "1 0", 1, 0)
+
+nocebo_3$total_info_3 = ifelse(nocebo_3$total_info_c == "1 1", 1, 0)
+
+# categorized the nocebo response to COVID-19
+nocebo_3$sub_infected <- factor(nocebo_3$sub_infected, levels = c(0,1))
+
+# check the numbers of each group
+table(apply(nocebo_3[,9:11],2,sum))
+
+# randomly check the 5 rows of the data
+sample_n(nocebo_3,5)
+
+```
+
+```{r}
+model2 <- '
+c19_anxiety ~ b1*total_info_1 + b2*total_info_2 + b3*total_info_3 
+sub_infected~ a1*total_info_1 + a2*total_info_2 + a3*total_info_3 + c*c19_anxiety
+
+dir := a1 + a2 + a3
+ind := (b1+b2+b3)*c
+tot := dir + ind
+'
+fit2 <- sem(model2, ordered = c("sub_infected"), data = nocebo_3)
+summary(fit2, fit.measures = TRUE)
+```
+
+
+<br>
+
+<br>
+
+<br> 
+
+# **5 Subsidiary analyses**
+_ _ _
+
+**adding the controls variables**
+
+Model 3: moderation of trust in information sources and mediation of COVID-19 anxiety with control variables
+
+```{r}
+# add the control variables into the data
+nocebo_2$age_cate <- nocebo_1$age_cate
+nocebo_2$gad <- nocebo_1$gad
+nocebo_2$health <- nocebo_1$health
+nocebo_2$gender <- nocebo_1$gender
+nocebo_2$income <- nocebo_1$income
+
+# randomly check 5 rows of the data
+sample_n(nocebo_2,5)
+
+model3 <-'
+c19_anxiety ~ b1*total_info_c  + b2*total_trust_c + b3*info_trust + age_cate + gender + income + health + gad 
+sub_infected~a1*total_info_c  + a2*total_trust_c + a3*info_trust + c*c19_anxiety + age_cate + gender + income + health + gad
+
+dir := a1+a2+a3
+ind := (b1+b2+b3)*c
+tot := dir + ind
+'
+fit3 <- sem(model3, ordered = c("sub_infected"), data = nocebo_2)
+summary(fit3, fit.measures = TRUE)
+
+```
+
+Model 4: moderation of knowing information from different sources and mediation of COVID-19 anxiety with control variables
+```{r}
+# add the control variables into the data
+nocebo_3$age_cate <- nocebo_1$age_cate
+nocebo_3$gad <- nocebo_1$gad
+nocebo_3$health <- nocebo_1$health
+nocebo_3$gender <- nocebo_1$gender
+nocebo_3$income <- nocebo_1$income
+
+# randomly check 5 rows of the data
+sample_n(nocebo_3,5)
+
+model4 <- '
+c19_anxiety ~ b1*total_info_1 + b2*total_info_2 + b3*total_info_3 +  age_cate + gender + income + health + gad
+sub_infected~ a1*total_info_1 + a2*total_info_2 + a3*total_info_3 + c*c19_anxiety + age_cate + gender + income + health + gad
+
+dir := a1 + a2 + a3
+ind := (b1+b2+b3)*c
+tot := dir + ind
+'
+fit4 <- sem(model4, ordered = c("sub_infected"), data = nocebo_3)
+summary(fit4, fit.measures = TRUE)
+
+```
+
+
+<br>
+
+<br>
+
+<br>
+
+### *References*
+- - - 
+
+Kirill Müller (2020). here: A Simpler Way to Find Your Files. R package version 1.0.1. https://CRAN.R-project.org/package=here
+
+<br>
+
+Revelle W (2021). psych: Procedures for Psychological, Psychometric, and Personality Research. Northwestern University, Evanston, Illinois. R package version 2.1.6, https://CRAN.R-project.org/package=psych.
+
+<br>
+
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” Journal of Open Source Software, 4(43), 1686. doi: 10.21105/joss.01686.
+
+<br>
+
+Wickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
+
+<br>
+
+Yihui Xie (2021). knitr: A General-Purpose Package for Dynamic Report Generation in R. R package version 1.33.
+
+<br>
+
+Yves Rosseel (2012). lavaan: An R Package for Structural Equation Modeling. Journal of Statistical Software, 48(2), 1-36. URL https://www.jstatsoft.org/v48/i02/.
+
