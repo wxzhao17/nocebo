@@ -1,8 +1,0 @@
-COVID W1_W2_W3_W4 Cleaned 4949.sav
-
-- contains C19PRC-UK data from wave 1 to wave 4, file type as sav.
-
-
-COVID W1_W2_W3_W4 Cleaned 4949.csv
-
-- contains C19PRC-UK data from wave 1 to wave 4,, file type as csv used to load into the R, including 4949 observations and 1960 variables.
